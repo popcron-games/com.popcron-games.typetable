@@ -1,0 +1,10 @@
+{
+  "name": "com.popcron-games.typecache",
+  "displayName": "Popcron TypeCache",
+  "description": "Provides a cache of types used, to help with make reflection more efficient at runtime and work with IL2CPP.",
+  "version": "1.0.0",
+  "author": {
+    "name": "popcron",
+    "url": "https://github.com/popcron-games/com.popcron-games.typecache"
+  }
+}
