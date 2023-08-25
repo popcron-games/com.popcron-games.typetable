@@ -34,11 +34,11 @@ namespace Popcron
                         }
                         else if (preloadedAssets[i] is TypeCacheSettings settings)
                         {
-                            if (settingsFromPreloaded != null)
+                            if (settingsFromPreloaded == null)
                             {
                                 settingsFromPreloaded = settings;
                             }
-                            else
+                            else if (settingsFromPreloaded == settings)
                             {
                                 Debug.LogErrorFormat("Duplicate TypeCache settings {0} will be ignored", settings);
                             }
@@ -68,6 +68,7 @@ namespace Popcron
                         }
                     }
 
+                    UnityEditor.AssetDatabase.SaveAssets();
                     UnityEditor.PlayerSettings.SetPreloadedAssets(preloadedAssets.ToArray());
                     UnityEditor.AssetDatabase.SaveAssets();
                     return settingsFromPreloaded;
