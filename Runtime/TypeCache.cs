@@ -10,10 +10,13 @@ namespace Popcron
     {
         private static readonly Dictionary<int, Type> fullNameToType = new Dictionary<int, Type>();
         private static readonly Dictionary<int, Type> aqnToType = new Dictionary<int, Type>();
+        private static readonly List<Type> types = new List<Type>();
         private static readonly Dictionary<Assembly, HashSet<Type>> assemblyToTypes = new Dictionary<Assembly, HashSet<Type>>();
         private static readonly Dictionary<Type, HashSet<Type>> typeToSubtypes = new Dictionary<Type, HashSet<Type>>();
         private static readonly Dictionary<Type, HashSet<Type>> typeToImplementing = new Dictionary<Type, HashSet<Type>>();
         private static readonly Dictionary<Type, HashSet<(MethodInfo, Attribute)>> attributeToStaticMethods = new Dictionary<Type, HashSet<(MethodInfo, Attribute)>>();
+
+        public static IReadOnlyList<Type> All => types;
 
         static TypeCache()
         {
@@ -64,6 +67,7 @@ namespace Popcron
 
             foreach (Type type in types)
             {
+                TypeCache.types.Add(type);
                 HashSet<Type> subtypes = typeToSubtypes[type];
                 HashSet<Type> implementing = typeToImplementing[type];
                 bool isInterface = type.IsInterface;
@@ -147,13 +151,9 @@ namespace Popcron
 
         public static Type GetType(int identifierHash)
         {
-            if (aqnToType.TryGetValue(identifierHash, out Type aqnType))
+            if (TryGetType(identifierHash, out Type type))
             {
-                return aqnType;
-            }
-            else if (fullNameToType.TryGetValue(identifierHash, out Type fullNameType))
-            {
-                return fullNameType;
+                return type;
             }
             else
             {
@@ -161,8 +161,36 @@ namespace Popcron
             }
         }
 
+        public static bool TryGetType(string identifier, out Type type)
+        {
+            return TryGetType(identifier.AsSpan(), out type);
+        }
+
+        public static bool TryGetType(ReadOnlySpan<char> identifier, out Type type)
+        {
+            int hash = GetHash(identifier);
+            return TryGetType(hash, out type);
+        }
+
+        public static bool TryGetType(int identifier, out Type type)
+        {
+            if (aqnToType.TryGetValue(identifier, out type))
+            {
+                return true;
+            }
+            else if (fullNameToType.TryGetValue(identifier, out type))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        ///<summary>This type must have its assembly cached.</summary>
         /// <typeparam name="T"></typeparam>
-        /// <returns>All known types that are derived from <typeparamref name="T"/></returns>
+        /// <returns>All known types that are derived from <typeparamref name="T"/></returns>.
         public static IReadOnlyCollection<Type> GetSubtypesOf<T>()
         {
             return GetSubtypesOf(typeof(T));
