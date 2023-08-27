@@ -29,9 +29,8 @@ namespace Popcron
                     {
                         asm = Assembly.Load(assemblyName);
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        Debug.LogError(ex);
                         continue;
                     }
 
