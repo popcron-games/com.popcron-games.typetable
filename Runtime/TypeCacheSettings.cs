@@ -40,7 +40,7 @@ namespace Popcron
                             }
                             else if (settingsFromPreloaded == settings)
                             {
-                                Debug.LogErrorFormat("Duplicate TypeCache settings {0} will be ignored", settings);
+                                Debug.LogErrorFormat("Duplicate TypeCache settings in preloaded assets {0} will be ignored", settings);
                             }
                         }
                     }
