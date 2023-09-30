@@ -1,4 +1,6 @@
 # TypeCache
+![Alt text](image.png)
+
 When a project wants to iterate through types for a particular system, either the types are manually inserted, or theyre found at runtime in a "hands-off" automatic way.
 
 This is to support the effort of making it "hands-off".
