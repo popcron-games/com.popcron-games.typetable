@@ -10,7 +10,7 @@ namespace Popcron
     {
         private static readonly Dictionary<int, Type> fullNameToType = new Dictionary<int, Type>();
         private static readonly Dictionary<int, Type> aqnToType = new Dictionary<int, Type>();
-        private static readonly List<Type> types = new List<Type>();
+        private static readonly HashSet<Type> types = new HashSet<Type>();
         private static readonly HashSet<Assembly> assemblies = new HashSet<Assembly>();
         private static readonly Dictionary<Assembly, HashSet<Type>> assemblyToTypes = new Dictionary<Assembly, HashSet<Type>>();
         private static readonly Dictionary<Type, HashSet<Type>> typeToSubtypes = new Dictionary<Type, HashSet<Type>>();
@@ -18,7 +18,8 @@ namespace Popcron
         private static readonly Dictionary<Type, HashSet<(MemberInfo, Attribute)>> attributeToMembers = new Dictionary<Type, HashSet<(MemberInfo, Attribute)>>();
         private static readonly Dictionary<Type, HashSet<(Type, Attribute)>> attributeToTypes = new Dictionary<Type, HashSet<(Type, Attribute)>>();
 
-        public static IReadOnlyList<Type> All => types;
+        public static IReadOnlyCollection<Type> Types => types;
+        public static IReadOnlyCollection<Assembly> Assemblies => assemblies;
 
         static TypeCache()
         {
