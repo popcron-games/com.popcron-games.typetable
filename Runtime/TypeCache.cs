@@ -106,7 +106,7 @@ namespace Popcron
                 }
 
                 //members with attributes
-                MemberInfo[] members = type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic);
+                MemberInfo[] members = type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
                 foreach (MemberInfo member in members)
                 {
                     foreach (Attribute attribute in member.GetCustomAttributes())
