@@ -1,6 +1,5 @@
 ﻿#nullable enable
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,11 +11,11 @@ namespace Popcron
     public class TypeCacheWindow : EditorWindow
     {
         public const string WindowName = nameof(TypeCache);
+        private static readonly Queue<Type> searchResult = new Queue<Type>();
 
         private Vector2 scrollPosition;
         private string? search;
         private int resultsFound;
-        private readonly ConcurrentQueue<Type> searchResult = new ConcurrentQueue<Type>();
         private CancellationTokenSource? cts;
 
         private void OnEnable()
@@ -39,9 +38,8 @@ namespace Popcron
             window.Show();
         }
 
-        private static async Task<HashSet<Type>> Search(string search, CancellationToken cancellationToken)
+        private static async Task Search(string search, CancellationToken cancellationToken)
         {
-            HashSet<Type> searchResult = new HashSet<Type>();
             DateTime lastTime = DateTime.Now;
             const double MaxThreadBlockTime = 0.1;
             foreach (Type type in TypeCache.Types)
@@ -49,7 +47,7 @@ namespace Popcron
                 bool found = false;
                 if (!string.IsNullOrEmpty(search))
                 {
-                    if (type.FullName.Contains(search, StringComparison.OrdinalIgnoreCase))
+                    if (type.FullName.AsSpan().Contains(search.AsSpan(), StringComparison.OrdinalIgnoreCase))
                     {
                         //found it
                         found = true;
@@ -59,7 +57,7 @@ namespace Popcron
                         Type? current = type;
                         while (current != null)
                         {
-                            if (current.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
+                            if (current.Name.AsSpan().Contains(search.AsSpan(), StringComparison.OrdinalIgnoreCase))
                             {
                                 //found it
                                 found = true;
@@ -69,7 +67,7 @@ namespace Popcron
                             {
                                 foreach (Type interfaceType in type.GetInterfaces())
                                 {
-                                    if (interfaceType.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
+                                    if (interfaceType.Name.AsSpan().Contains(search.AsSpan(), StringComparison.OrdinalIgnoreCase))
                                     {
                                         //found it
                                         found = true;
@@ -95,7 +93,7 @@ namespace Popcron
 
                 if (found)
                 {
-                    searchResult.Add(type);
+                    searchResult.Enqueue(type);
                 }
 
                 TimeSpan timeElapsedSince = DateTime.Now - lastTime;
@@ -107,16 +105,10 @@ namespace Popcron
                     }
                     catch { }
 
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        return searchResult;
-                    }
-
+                    if (cancellationToken.IsCancellationRequested) return;
                     lastTime = DateTime.Now;
                 }
             }
-
-            return searchResult;
         }
 
         private void OnGUI()
@@ -168,14 +160,8 @@ namespace Popcron
             cts?.Cancel();
             cts?.Dispose();
             cts = new CancellationTokenSource();
-            Search(search, cts.Token).ContinueWith((finished) =>
-            {
-                searchResult.Clear();
-                foreach (Type type in finished.Result)
-                {
-                    searchResult.Enqueue(type);
-                }
-            });
+            searchResult.Clear();
+            _ = Search(search, cts.Token);
         }
     }
 }

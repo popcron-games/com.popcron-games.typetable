@@ -6,5 +6,12 @@
   "author": {
     "name": "popcron",
     "url": "https://github.com/popcron-games/com.popcron-games.typecache"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "Required .dll plugins",
+      "description": "Required .dll to access ReadOnlySpan<> type if needed.",
+      "path": "Samples~/Required .dll plugins"
+    }
+  ]
 }
