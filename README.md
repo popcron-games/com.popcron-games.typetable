@@ -17,6 +17,9 @@ This is to support the effort of making it "hands-off".
     - this only happens in editor, if project has never ran then it will remain empty until populated
 - In builds, the `TypeCache` will only load the assemblies from the asset
   - Load time depends on the size of the assemblies (how many types to iterate through)
+ 
+### Dependencies
+- Access to `ReadOnlySpan<>` (requires `System.Memory` and `System.Runtime.CompilerServices.Unsafe` which is available in a sample)
 
 ### Fetch all static methods with an attribute:
 ```cs
