@@ -58,12 +58,12 @@ namespace Popcron
                 int aqnHash = GetHash(type.AssemblyQualifiedName.AsSpan());
                 aqnToType.Add(aqnHash, type);
 
-                int fullNameHash = GetHash(type.FullName.AsSpan());
-                if (!fullNameToType.ContainsKey(fullNameHash))
+                if (!types.Contains(type))
                 {
-                    fullNameToType.Add(fullNameHash, type);
-                    typeToSubtypes.Add(type, new HashSet<Type>());
-                    typeToImplementing.Add(type, new HashSet<Type>());
+                    int fullNameHash = GetHash(type.FullName.AsSpan());
+                    fullNameToType[fullNameHash] = type;
+                    typeToSubtypes[type] = new HashSet<Type>();
+                    typeToImplementing[type] = new HashSet<Type>();
                     types.Add(type);
                 }
             }
