@@ -19,7 +19,8 @@ This is to support the effort of making it "hands-off".
   - Load time depends on the size of the assemblies (how many types to iterate through)
  
 ### Dependencies
-- Access to `ReadOnlySpan<>` (requires `System.Memory` and `System.Runtime.CompilerServices.Unsafe` which is available in a sample)
+- Access to `ReadOnlySpan<>`
+  - Requires `System.Buffers` and `System.Memory` and `System.Runtime.CompilerServices.Unsafe`, all available in a sample
 
 ### Fetch all static methods with an attribute:
 ```cs
