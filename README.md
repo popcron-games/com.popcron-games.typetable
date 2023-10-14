@@ -18,9 +18,13 @@ This is to support the effort of making it "hands-off".
 - In builds, the `TypeCache` will only load the assemblies from the asset
   - Load time depends on the size of the assemblies (how many types to iterate through)
  
-### Dependencies
-- Access to `ReadOnlySpan<>`
-  - Requires `System.Buffers` and `System.Memory` and `System.Runtime.CompilerServices.Unsafe`, all available in a sample
+### Dependencies and Installation
+- Access to `ReadOnlySpan<>` is needed
+  - This requires `System.Buffers` and `System.Memory` and `System.Runtime.CompilerServices.Unsafe`, all available in a sample
+URL for adding as package:
+```json
+https://github.com/popcron-games/com.popcron-games.typecache.git
+```
 
 ### Fetch all static methods with an attribute:
 ```cs
