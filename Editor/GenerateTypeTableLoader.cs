@@ -17,7 +17,6 @@ namespace Popcron
             Generate("Assets/TypeTableLoader.cs");
         }
 
-        [InitializeOnLoadMethod]
         public static void Generate(string pathToScript)
         {
             string script = GenerateScript();
@@ -56,6 +55,9 @@ namespace Popcron
                 builder.AppendLine(");");
             }
 
+            builder.Append(Indent);
+            builder.Append(Indent);
+            builder.AppendLine("TypeTable.FindAssignableTypes();");
             builder.Append(Indent);
             builder.AppendLine("}");
             builder.AppendLine("}");

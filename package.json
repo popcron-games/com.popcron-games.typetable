@@ -2,7 +2,7 @@
   "name": "com.popcron-games.typetable",
   "displayName": "Popcron TypeTable",
   "description": "Provides a map of type ID to type instances.",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "author": {
     "name": "popcron",
     "url": "https://github.com/popcron-games/com.popcron-games.typetable"

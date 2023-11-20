@@ -3,53 +3,83 @@
 
 ### Features
 * Assigning types an ID using the `[TypeID]` attribute
-    * This attribute will preserve the type in builds so its not missing due to IL2CPP stripping
-* Fetching type IDs using `TypeTable.GetID<T>()`
+  * This attribute will preserve the type declaration in builds so its not missing due to IL2CPP stripping due to 0 references
+* Fetching type IDs from a type using `TypeTable.GetID<T>()`
+* Fetching types that implement the desired type, or inherit from it using `TypeTable.GetTypesAssignableFrom<T>()`
+* Types are loaded automatically in editor, but not for builds
+  * Use the tool in `Window/Popcron/TypeTable/Generate Loader Script` to generate a .cs file that loads all found types with the attribute (can hook this up to automation)
  
 ### Installation
 URL for adding as package:
 ```json
-https://github.com/popcron-games/com.popcron-games.typecache.git
+https://github.com/popcron-games/com.popcron-games.typetable.git
 ```
 
 ### Example
+Where `IManager` instances are automatically created in build or in editor
 ```cs
-[TypeID(1)]
-public class Position
+#if UNITY_EDITOR
+[UnityEditor.InitializeOnLoad]
+#endif
+public static class ManagerManager
 {
-    public Vector3 value;
-}
+    private static bool initialized;
+    private static readonly Dictionary<Type, IManager> managers = new Dictionary<Type, IManager>();
 
-[TypeID(2)]
-public class Color
-{
-    public Vector3 hsv;
-}
-
-[TypeID(3)]
-public interface ICommand
-{
-    void Run();
-}
-
-[TypeID(4)]
-public class PlayGame : ICommand
-{
-    void ICommand.Run()
+    static ManagerManager()
     {
-        Debug.Log("play game!");
+        Initialize();
+    }
+
+    private static void Dispose()
+    {
+        foreach (IManager manager in managers.Values)
+        {
+            manager.Dispose();
+        }
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void Initialize()
+    {
+        if (initialized) return;
+        initialized = true;
+
+        foreach (Type type in TypeTable.GetTypesAssignableFrom<IManager>())
+        {
+            if (type.IsInterface) continue;
+            managers.Add(type, (IManager)Activator.CreateInstance(type));
+        }
+
+#if UNITY_EDITOR
+        UnityEditor.Compilation.CompilationPipeline.compilationStarted += (v) =>
+        {
+            Dispose();
+        };
+#else
+        Application.quitting += Dispose;
+#endif
     }
 }
 
-foreach (Type type in TypeTable.Types)
+[TypeID(100)]
+public interface IManager : IDisposable
 {
-    Debug.Log(type);
+
 }
 
-foreach (Type commandType in TypeTable.GetTypesAssignableFrom<ICommand>())
+[TypeID(101)]
+public class GameManager : IManager
 {
-    if (commandType.IsInterface) continue;
-    ICommand command = (ICommand)Activator.CreateInstance(commandType);
-    command.Run();
+    public GameManager()
+    {
+        //will get called in editor (in edit mode) and in build (like its play in editor)
+        Debug.Log("created game manager");
+    }
+
+    void IDisposable.Dispose()
+    {
+        Debug.Log("destroyed game manager");
+    }
 }
 ```

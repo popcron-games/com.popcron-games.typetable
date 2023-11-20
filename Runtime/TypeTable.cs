@@ -45,24 +45,16 @@ namespace Popcron
             {
                 HashSet<ushort> typeIds = new HashSet<ushort>();
                 HashSet<Type> subTypes = new HashSet<Type>();
-                Stack<Type> stack = new Stack<Type>();
-                stack.Push(type);
-                while (stack.Count > 0)
+                foreach (Type otherType in types)
                 {
-                    Type current = stack.Pop();
-                    if (typeToId.TryGetValue(current, out ushort typeId))
+                    if (type.IsAssignableFrom(otherType))
                     {
-                        typeIds.Add(typeId);
-                        subTypes.Add(current);
-                    }
-
-                    foreach (Type assignable in types)
-                    {
-                        if (current.IsAssignableFrom(assignable))
+                        if (TryGetID(otherType, out ushort otherTypeId))
                         {
-                            if (assignable == current) continue;
-                            stack.Push(assignable);
+                            typeIds.Add(otherTypeId);
                         }
+
+                        subTypes.Add(otherType);
                     }
                 }
 

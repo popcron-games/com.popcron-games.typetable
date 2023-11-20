@@ -54,6 +54,8 @@ namespace Popcron
                 ushort typeId = type.GetCustomAttribute<TypeIDAttribute>().typeId;
                 TypeTable.Register(type, typeId);
             }
+
+            TypeTable.FindAssignableTypes();
         }
     }
 }
