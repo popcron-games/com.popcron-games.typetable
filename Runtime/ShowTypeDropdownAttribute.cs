@@ -5,20 +5,23 @@ using UnityEngine;
 namespace Popcron
 {
     /// <summary>
-    /// If the field is of type <see cref="string"/>, then a dropdown will appear as an option to select a type.
+    /// Displays a dropdown for <see cref="int"/> and <see cref="ushort"/> fields.
     /// </summary>
     public class ShowTypeDropdownAttribute : PropertyAttribute
     {
-        public Type AssignableFrom { get; }
+        public readonly Type assignableFrom;
+        public readonly bool ignoreInterfaces;
 
         public ShowTypeDropdownAttribute()
         {
-            AssignableFrom = typeof(object);
+            assignableFrom = typeof(object);
+            ignoreInterfaces = false;
         }
 
-        public ShowTypeDropdownAttribute(Type assignableFrom)
+        public ShowTypeDropdownAttribute(Type assignableFrom, bool ignoreInterfaces = false)
         {
-            AssignableFrom = assignableFrom;
+            this.assignableFrom = assignableFrom;
+            this.ignoreInterfaces = ignoreInterfaces;
         }
     }
 }

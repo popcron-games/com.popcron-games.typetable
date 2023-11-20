@@ -20,14 +20,14 @@ namespace Popcron
             Rect idField = new Rect(position.x, position.y, position.width - width - gap, position.height);
             Rect valueField = new Rect(position.max.x - width, position.y, width, position.height);
 
-            string newValue = EditorGUI.TextField(idField, label, property.stringValue);
-            if (newValue != property.stringValue)
+            int newValue = EditorGUI.IntField(idField, label, property.intValue);
+            if (newValue != property.intValue)
             {
-                property.stringValue = newValue;
+                property.intValue = newValue;
             }
 
             GUIContent dropdownLabel;
-            if (TypeCache.TryGetType(property.stringValue, out Type foundType))
+            if (TypeTable.TryGetType((ushort)property.intValue, out Type foundType))
             {
                 dropdownLabel = new GUIContent(foundType.Name);
             }
@@ -39,9 +39,9 @@ namespace Popcron
             if (EditorGUI.DropdownButton(valueField, dropdownLabel, FocusType.Keyboard))
             {
                 string title;
-                if (attribute.AssignableFrom != typeof(object))
+                if (attribute.assignableFrom != typeof(object))
                 {
-                    title = attribute.AssignableFrom.Name;
+                    title = attribute.assignableFrom.Name;
                 }
                 else
                 {
@@ -49,35 +49,37 @@ namespace Popcron
                 }
 
                 HashSet<SearchableDropdown.Option> options = new HashSet<SearchableDropdown.Option>();
-                foreach (Type type in TypeCache.Types)
+                foreach (Type type in TypeTable.Types)
                 {
-                    if (type.IsAbstract)
+                    if (attribute.ignoreInterfaces && type.IsInterface)
                     {
                         continue;
                     }
 
-                    if (!attribute.AssignableFrom.IsAssignableFrom(type))
+                    if (!attribute.assignableFrom.IsAssignableFrom(type))
                     {
                         continue;
                     }
 
-                    if (type.BaseType != null)
+                    ushort typeId = TypeTable.GetID(type);
+                    if (type.BaseType != null && TypeTable.Contains(type.BaseType))
                     {
-                        options.Add(new SearchableDropdown.Option(type.FullName, type.Name, type.BaseType.FullName));
+                        ushort parentTypeId = TypeTable.GetID(type.BaseType);
+                        options.Add(new SearchableDropdown.Option(typeId, type.Name, parentTypeId));
                     }
                     else
                     {
-                        options.Add(new SearchableDropdown.Option(type.FullName, type.Name));
+                        options.Add(new SearchableDropdown.Option(typeId, type.Name));
                     }
                 }
 
                 SearchableDropdown dropdown = new SearchableDropdown(title, options.ToArray(), (option) =>
                 {
-                    property.stringValue = option.value;
+                    property.intValue = option.typeId;
                     property.serializedObject.ApplyModifiedProperties();
                 });
 
-                dropdown.Show(valueField);
+                dropdown.Show(new Rect(valueField.position, valueField.size * 2));
             }
         }
 
@@ -108,13 +110,13 @@ namespace Popcron
 
                 foreach (Option option in options)
                 {
-                    if (option.parentValue != null)
+                    if (option.parentTypeId != null)
                     {
                         //find the parent
                         AdvancedDropdownItem? parent = null;
                         foreach (AdvancedDropdownItem item in stack)
                         {
-                            if (item.id == GetHash(option.parentValue))
+                            if (item.id == option.parentTypeId)
                             {
                                 parent = item;
                                 break;
@@ -127,14 +129,14 @@ namespace Popcron
                         }
 
                         AdvancedDropdownItem child = new AdvancedDropdownItem(option.label);
-                        child.id = GetHash(option.value);
+                        child.id = option.typeId;
                         parent.AddChild(child);
                         stack.Push(child);
                     }
                     else
                     {
                         AdvancedDropdownItem child = new AdvancedDropdownItem(option.label);
-                        child.id = GetHash(option.value);
+                        child.id = option.typeId;
                         root.AddChild(child);
                         stack.Push(child);
                     }
@@ -147,7 +149,7 @@ namespace Popcron
             {
                 foreach (Option o in options)
                 {
-                    if (GetHash(o.value) == item.id)
+                    if (o.typeId == item.id)
                     {
                         onSelected(o);
                         break;
@@ -155,40 +157,26 @@ namespace Popcron
                 }
             }
 
-            public static int GetHash(string input)
-            {
-                unchecked
-                {
-                    int h = 0;
-                    for (int i = 0; i < input.Length; i++)
-                    {
-                        h = (h << 5) - h + input[i];
-                    }
-
-                    return h;
-                }
-            }
-
             public readonly struct Option
             {
                 private static readonly StringBuilder sb = new StringBuilder();
 
-                public readonly string value;
+                public readonly ushort typeId;
                 public readonly string label;
-                public readonly string? parentValue;
+                public readonly ushort? parentTypeId;
 
-                public Option(string value, string label, string parentValue)
+                public Option(ushort typeId, string label, ushort parentTypeId)
                 {
-                    this.value = value;
+                    this.typeId = typeId;
                     this.label = label;
-                    this.parentValue = parentValue;
+                    this.parentTypeId = parentTypeId;
                 }
 
-                public Option(string value, string label)
+                public Option(ushort typeId, string label)
                 {
-                    this.value = value;
+                    this.typeId = typeId;
                     this.label = label;
-                    this.parentValue = null;
+                    this.parentTypeId = null;
                 }
 
                 public override string ToString()
@@ -196,7 +184,7 @@ namespace Popcron
                     sb.Clear(); 
                     sb.Append(label);
                     sb.Append(" (");
-                    sb.Append(value);
+                    sb.Append(typeId);
                     sb.Append(")");
                     return sb.ToString();
                 }

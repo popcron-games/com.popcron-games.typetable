@@ -1,78 +1,55 @@
-# TypeCache
+# TypeTable
 ![Alt text](image.png)
 
-When a project wants to iterate through types for a particular system, either the types are manually inserted, or theyre found at runtime in a "hands-off" automatic way.
-
-This is to support the effort of making it "hands-off".
-- To avoid ending up caching assemblies multiple times, or fetching them from `AppDomain` (basically wasted execution cycles).
-- Acts as a central cache of types with an API for helping developers automate their designs, commonly:
-  - Fetch types with an attribute
-  - Fetch static methods with an attribute
-  - Fetch types that implement an interface
-  - Similar to [UnityEditor.TypeCache](https://docs.unity3d.com/ScriptReference/TypeCache.html)
-- Relies on an asset that contains a list of assembly names
-  - Automatically created, and made sure to always exist before play/builds
-  - Will be in projects preloaded assets list
-  - Assemblies that are missing from the list are automatically added
-    - this only happens in editor, if project has never ran then it will remain empty until populated
-- In builds, the `TypeCache` will only load the assemblies from the asset
-  - Load time depends on the size of the assemblies (how many types to iterate through)
+### Features
+* Assigning types an ID using the `[TypeID]` attribute
+    * This attribute will preserve the type in builds so its not missing due to IL2CPP stripping
+* Fetching type IDs using `TypeTable.GetID<T>()`
  
-### Dependencies and Installation
-- Access to `ReadOnlySpan<>` is needed
-  - This requires `System.Buffers` and `System.Memory` and `System.Runtime.CompilerServices.Unsafe`, all available in a sample
+### Installation
 URL for adding as package:
 ```json
 https://github.com/popcron-games/com.popcron-games.typecache.git
 ```
 
-### Fetch all static methods with an attribute:
+### Example
 ```cs
-foreach ((MemberInfo member, Debug attribute) in TypeCache.GetMembersWithAttribute<Debug>())
+[TypeID(1)]
+public class Position
 {
-    if (member is MethodInfo method && method.IsStatic) 
+    public Vector3 value;
+}
+
+[TypeID(2)]
+public class Color
+{
+    public Vector3 hsv;
+}
+
+[TypeID(3)]
+public interface ICommand
+{
+    void Run();
+}
+
+[TypeID(4)]
+public class PlayGame : ICommand
+{
+    void ICommand.Run()
     {
-        Debug.Log($"Method {method} has the debug attribute!");
-    }
-    else 
-    {
-        //could be a field, or a property too
+        Debug.Log("play game!");
     }
 }
-```
 
-### Retrieve all types that implement an interface:
-```cs
-foreach (Type type in TypeCache.GetTypesAssignableFrom<IExample>())
+foreach (Type type in TypeTable.Types)
 {
-    //could be another interface, could be abstract
-    Debug.Log($"Type {type} implements the IExample interface!");
+    Debug.Log(type);
 }
-```
 
-### Retrieve all types that strictly inherit from a class:
-```cs
-foreach (Type type in TypeCache.GetSubtypesOf<Component>())
+foreach (Type commandType in TypeTable.GetTypesAssignableFrom<ICommand>())
 {
-    Debug.Log($"Type {type} is a component!");
-}
-```
-### Create objects of type X:
-```cs
-foreach (Type type in TypeCache.GetTypesAssignableFrom<Mod>())
-{
-    if (type.IsAbstract || type.IsInterface) continue;
-
-    Mod mod = (Mod)Activator.CreateInstance(type);
-    Debug.Log($"Created mod {mod}!");
-}
-```
-
-### Retrieve all types with an attribute:
-```cs
-foreach (Type type in TypeCache.GetTypesWithAttribute<Debug>())
-{
-    //could be class, or struct
-    Debug.Log($"Type {type} has the debug attribute!");
+    if (commandType.IsInterface) continue;
+    ICommand command = (ICommand)Activator.CreateInstance(commandType);
+    command.Run();
 }
 ```

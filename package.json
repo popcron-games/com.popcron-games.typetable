@@ -1,17 +1,10 @@
 {
-  "name": "com.popcron-games.typecache",
-  "displayName": "Popcron TypeCache",
-  "description": "Contains central cache of relevant assemblies and its types for runtime use.",
-  "version": "1.2.1",
+  "name": "com.popcron-games.typetable",
+  "displayName": "Popcron TypeTable",
+  "description": "Provides a map of type ID to type instances.",
+  "version": "1.2.2",
   "author": {
     "name": "popcron",
-    "url": "https://github.com/popcron-games/com.popcron-games.typecache"
-  },
-  "samples": [
-    {
-      "displayName": "Required .dll plugins",
-      "description": "Required .dll to access ReadOnlySpan<> type if needed.",
-      "path": "Samples~/Required .dll plugins"
-    }
-  ]
+    "url": "https://github.com/popcron-games/com.popcron-games.typetable"
+  }
 }
