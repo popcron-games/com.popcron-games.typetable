@@ -19,7 +19,7 @@ namespace Popcron
             if (types.Contains(type)) return;
             if (idToType.ContainsKey(typeId))
             {
-                throw new Exception($"Type ID {typeId} has already been registered by {idToType[typeId]}");
+                throw new Exception($"Type {type} is trying to register for ID {typeId} occupied by {idToType[typeId]}");
             }
 
             idToType[typeId] = type;
