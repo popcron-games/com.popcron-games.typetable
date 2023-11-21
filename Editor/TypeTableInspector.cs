@@ -11,7 +11,7 @@ namespace Popcron
     public class TypeTableInspector : EditorWindow
     {
         public const string WindowName = nameof(TypeTable) + " Inspector";
-        private static readonly Queue<(Type result, Type? hit)> searchResult = new Queue<(Type, Type?)>();
+        private static readonly List<(Type result, Type? hit)> sortedResults = new List<(Type, Type?)>();
 
         private Vector2 scrollPosition;
         private string? search;
@@ -38,8 +38,9 @@ namespace Popcron
             window.Show();
         }
 
-        private static async Task Search(string search, CancellationToken cancellationToken)
+        private static async Task<Queue<(Type result, Type? hit)>> Search(string search, CancellationToken cancellationToken)
         {
+            Queue<(Type result, Type? hit)> results = new Queue<(Type, Type?)>();
             DateTime lastTime = DateTime.Now;
             const double MaxThreadBlockTime = 0.1;
             foreach (Type type in TypeTable.Types)
@@ -96,7 +97,7 @@ namespace Popcron
 
                 if (found)
                 {
-                    searchResult.Enqueue((type, hit));
+                    results.Enqueue((type, hit));
                 }
 
                 TimeSpan timeElapsedSince = DateTime.Now - lastTime;
@@ -108,10 +109,12 @@ namespace Popcron
                     }
                     catch { }
 
-                    if (cancellationToken.IsCancellationRequested) return;
+                    if (cancellationToken.IsCancellationRequested) return null;
                     lastTime = DateTime.Now;
                 }
             }
+
+            return results;
         }
 
         private void OnGUI()
@@ -134,7 +137,7 @@ namespace Popcron
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
             {
                 resultsFound = 0;
-                foreach ((Type result, Type? hit) in searchResult)
+                foreach ((Type result, Type? hit) in sortedResults)
                 {
                     EditorGUILayout.BeginHorizontal();
                     {
@@ -163,13 +166,20 @@ namespace Popcron
             EditorGUILayout.EndScrollView();
         }
 
-        private void StartAsyncSearch(string search)
+        private async void StartAsyncSearch(string search)
         {
             cts?.Cancel();
             cts?.Dispose();
             cts = new CancellationTokenSource();
-            searchResult.Clear();
-            _ = Search(search, cts.Token);
+
+            sortedResults.Clear();
+            Queue<(Type result, Type? hit)> results = await Search(search, cts.Token);
+            if (cts.Token.IsCancellationRequested) return;
+
+            //sort results by id
+            sortedResults.Clear();
+            sortedResults.AddRange(results);
+            sortedResults.Sort((a, b) => TypeTable.GetID(a.result).CompareTo(TypeTable.GetID(b.result)));
         }
     }
 }
