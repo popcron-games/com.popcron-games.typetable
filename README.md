@@ -6,8 +6,8 @@
   * This attribute will preserve the type declaration in builds so its not missing due to IL2CPP stripping due to 0 references
 * Fetching type IDs from a type using `TypeTable.GetID<T>()`
 * Fetching types that implement the desired type, or inherit from it using `TypeTable.GetTypesAssignableFrom<T>()`
-* Types are loaded automatically in editor, but not for builds
-  * Use the tool in `Window/Popcron/TypeTable/Generate Loader Script` to generate a .cs file that loads all found types with the attribute (can hook this up to automation)
+* Types in build are loaded using a TypeTableLoader script, this script is automatically generated when available types change
+  * Use the `Window/Popcron/TypeTable/Generate Loader Script` menu item to do this manually
  
 ### Installation
 URL for adding as package:
@@ -24,7 +24,7 @@ Where `IManager` instances are automatically created in build or in editor
 public static class ManagerManager
 {
     private static bool initialized;
-    private static readonly Dictionary<Type, IManager> managers = new Dictionary<Type, IManager>();
+    private static readonly Dictionary<Type, IManager> managers = new();
 
     static ManagerManager()
     {
