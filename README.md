@@ -2,11 +2,11 @@
 ![Alt text](image.png)
 
 ### Features
-* Assigning types an ID using the `[TypeID]` attribute
-  * This attribute will preserve the type declaration in builds so its not missing due to IL2CPP stripping due to 0 references
-* Fetching type IDs from a type using `TypeTable.GetID<T>()`
+* Assigning types an ID (`ushort`) using the `[TypeID]` attribute
+  * This attribute will preserve the type being decorated with the attribute, so its not missing because of IL2CPP stripping
+* Fetching type IDs and `Type`s from IDs using `TypeTable.GetID<T>()` and `TypeTable.GetType(typeId)`
 * Fetching types that implement the desired type, or inherit from it using `TypeTable.GetTypesAssignableFrom<T>()`
-* Types in build are loaded using a TypeTableLoader script, this script is automatically generated when available types change
+* Types in build are loaded using a TypeTableLoader script, this script is automatically generated when available types change while using the editor
   * Use the `Window/Popcron/TypeTable/Generate Loader Script` menu item to do this manually
  
 ### Installation
